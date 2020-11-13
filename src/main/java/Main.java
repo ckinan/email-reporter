@@ -14,6 +14,12 @@ import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
+import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.SheetsScopes;
+import com.google.api.services.sheets.v4.model.AppendValuesResponse;
+import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
+import com.google.api.services.sheets.v4.model.ValueRange;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -21,24 +27,27 @@ import us.codecraft.xsoup.Xsoup;
 
 import java.io.*;
 import java.security.GeneralSecurityException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Main {
-    private static final String APPLICATION_NAME = "Gmail API Java Quickstart";
+    private static final String APPLICATION_NAME = "Email Reporter";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
+    private static final Dotenv dotenv = Dotenv.load();
 
     /**
      * Global instance of the scopes required by this quickstart.
      * If modifying these scopes, delete your previously saved tokens/ folder.
-     * See: https://developers.google.com/gmail/api/auth/scopes
+     * See:
+     * - https://developers.google.com/gmail/api/auth/scopes
+     * - https://developers.google.com/sheets/api/guides/authorizing
      */
-    private static final List<String> SCOPES = Collections.singletonList(GmailScopes.GMAIL_READONLY);
+    private static final List<String> SCOPES = Arrays.asList(
+            GmailScopes.GMAIL_READONLY,
+            SheetsScopes.SPREADSHEETS
+    );
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
 
     /**
@@ -68,7 +77,13 @@ public class Main {
     public static void main(String... args) throws IOException, GeneralSecurityException {
         // Build a new authorized API client service.
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        Gmail service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+        Gmail serviceGmail = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+
+        final String spreadsheetId = dotenv.get("GOOGLE_SHEET_ID");
+        final String range = "Main!A1:J";
+        Sheets serviceSheets = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
 
@@ -80,19 +95,24 @@ public class Main {
         List<Map<String, String>> fields = (List<Map<String, String>>) mapObject.get("fields");
 
         // Search operators in Gmail: https://support.google.com/mail/answer/7190?hl=en
-        ListMessagesResponse listMessages = service.users().messages().list("me").setQ(query).execute();
+        ListMessagesResponse listMessages = serviceGmail.users().messages().list("me").setQ(query).execute();
         List<Message> messages = listMessages.getMessages();
 
         if (messages.isEmpty()) {
             System.out.println("No messages found.");
         } else {
             System.out.println("Report:");
+
+            List<List<Object>> newValues = new ArrayList<>();
+
             for (Message message : messages) {
                 System.out.printf("\n*** Message: %s ***\n", message.getId());
-                Message fullMessage = service.users().messages().get("me", message.getId()).setFormat("full").execute();
+                Message fullMessage = serviceGmail.users().messages().get("me", message.getId()).setFormat("full").execute();
                 String body = new String(Base64.decodeBase64(fullMessage.getPayload().getBody().getData().getBytes()));
 
                 Document document = Jsoup.parse(body);
+
+                List<Object> cellValues = new ArrayList<>();
 
                 for(Map<String, String> field: fields) {
                     String value = Main.readDocument(document, field.get("xpath"));
@@ -104,8 +124,17 @@ public class Main {
                         }
                     }
                     System.out.println(field.get("name") + ": " + value);
+                    cellValues.add(value);
                 }
+
+                newValues.add(cellValues);
             }
+
+            ValueRange valueRange = new ValueRange().setValues(newValues);
+            serviceSheets.spreadsheets().values().append(spreadsheetId, range, valueRange)
+                    .setValueInputOption("USER_ENTERED")
+                    .execute();
+            System.out.printf("cells updated.");
         }
     }
 
