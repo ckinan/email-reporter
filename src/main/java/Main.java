@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Main {
     private static final String APPLICATION_NAME = "Gmail API Java Quickstart";
@@ -75,7 +77,7 @@ public class Main {
         InputStream in = Main.class.getResourceAsStream("/config.json");
         Map<String, Object> mapObject = objectMapper.readValue(in, Map.class);
         String query = mapObject.get("query").toString();
-        Map<String, String> fields = (Map<String, String>) mapObject.get("fields");
+        List<Map<String, String>> fields = (List<Map<String, String>>) mapObject.get("fields");
 
         // Search operators in Gmail: https://support.google.com/mail/answer/7190?hl=en
         ListMessagesResponse listMessages = service.users().messages().list("me").setQ(query).execute();
@@ -92,8 +94,16 @@ public class Main {
 
                 Document document = Jsoup.parse(body);
 
-                for(String key: fields.keySet()) {
-                    System.out.println(key + ": " + Main.readDocument(document, fields.get(key)));
+                for(Map<String, String> field: fields) {
+                    String value = Main.readDocument(document, field.get("xpath"));
+                    if(field.get("regex") != null) {
+                        Pattern compile = Pattern.compile(field.get("regex"));
+                        Matcher matcher = compile.matcher(value);
+                        if(matcher.find()) {
+                            value = matcher.group("matcherGroup");
+                        }
+                    }
+                    System.out.println(field.get("name") + ": " + value);
                 }
             }
         }
