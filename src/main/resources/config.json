@@ -1,0 +1,49 @@
+{
+  "query": "label:Uber",
+  "fields": [
+    {
+      "name": "total",
+      "xpath": "/html/body/table/tbody/tr/td/table[@class='wrapper']/tbody/tr/td/table[@class='tron']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[3]/tbody/tr/td/table/tbody/tr/td/table[@class='receipt_body']/tbody/tr/td[@class='outsidegutter']/table/tbody/tr/td/table[@class='t10of12']/tbody/tr/td/table[1]/tbody/tr/td/table/tbody/tr/td[@class='Uber18_p3 black total_head'][2]",
+      "regex": ".* (?<matcherGroup>.*)"
+    },
+    {
+      "name": "currency",
+      "xpath": "/html/body/table/tbody/tr/td/table[@class='wrapper']/tbody/tr/td/table[@class='tron']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[3]/tbody/tr/td/table/tbody/tr/td/table[@class='receipt_body']/tbody/tr/td[@class='outsidegutter']/table/tbody/tr/td/table[@class='t10of12']/tbody/tr/td/table[1]/tbody/tr/td/table/tbody/tr/td[@class='Uber18_p3 black total_head'][2]",
+      "regex": "(?<matcherGroup>.*) .*"
+    },
+    {
+      "name": "date",
+      "xpath": "/html/body/table/tbody/tr/td/table[@class='wrapper']/tbody/tr/td/table[@class='tron']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[1]/tbody/tr/td/table/tbody/tr/td/table/tbody/tr/td[2]/table/tbody/tr/td/table[@class='t11of12 layout']/tbody/tr/td/table[@class='t10of12 layout']/tbody/tr/td[2]/table/tbody/tr/td/table/tbody/tr/td[@class='logo']/table/tbody/tr/td[@class='Uber18_text_p1 black'][2]/span[@class='Uber18_text_p1 black']"
+    },
+    {
+      "name": "startTime",
+      "xpath": "/html/body/table/tbody/tr/td/table[@class='wrapper']/tbody/tr/td/table[@class='tron']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[6]/tbody/tr[1]/td[@class='outsidegutter']/table/tbody/tr/td/table[@class='t11of12']/tbody/tr/td/table/tbody/tr/td/table[@class='t5of12']/tbody/tr/td/table/tbody/tr/td/table[1]/tbody/tr/td[@class='Uber18_text_p2 black']/table/tbody/tr[1]/td[@class='Uber18_text_p2 black']"
+    },
+    {
+      "name": "origin",
+      "xpath": "/html/body/table/tbody/tr/td/table[@class='wrapper']/tbody/tr/td/table[@class='tron']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[6]/tbody/tr[1]/td[@class='outsidegutter']/table/tbody/tr/td/table[@class='t11of12']/tbody/tr/td/table/tbody/tr/td/table[@class='t5of12']/tbody/tr/td/table/tbody/tr/td/table[1]/tbody/tr/td[@class='Uber18_text_p2 black']/table/tbody/tr[2]/td[@class='Uber18_text_p1']"
+    },
+    {
+      "name": "endTime",
+      "xpath": "/html/body/table/tbody/tr/td/table[@class='wrapper']/tbody/tr/td/table[@class='tron']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[6]/tbody/tr[1]/td[@class='outsidegutter']/table/tbody/tr/td/table[@class='t11of12']/tbody/tr/td/table/tbody/tr/td/table[@class='t5of12']/tbody/tr/td/table/tbody/tr/td/table[2]/tbody/tr/td[@class='Uber18_text_p2 black']/table/tbody/tr[1]/td[@class='Uber18_text_p2 black']"
+    },
+    {
+      "name": "destination",
+      "xpath": "/html/body/table/tbody/tr/td/table[@class='wrapper']/tbody/tr/td/table[@class='tron']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[6]/tbody/tr[1]/td[@class='outsidegutter']/table/tbody/tr/td/table[@class='t11of12']/tbody/tr/td/table/tbody/tr/td/table[@class='t5of12']/tbody/tr/td/table/tbody/tr/td/table[2]/tbody/tr/td[@class='Uber18_text_p2 black']/table/tbody/tr[2]/td[@class='Uber18_text_p1']"
+    },
+    {
+      "name": "distance",
+      "xpath": "/html/body/table/tbody/tr/td/table[@class='wrapper']/tbody/tr/td/table[@class='tron']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[6]/tbody/tr[1]/td[@class='outsidegutter']/table/tbody/tr/td/table[@class='t11of12']/tbody/tr/td/table/tbody/tr/td/table[1]/tbody/tr/td[@class='Uber18_text_p1']",
+      "regex": "(?<matcherGroup>.*) \\| .*"
+    },
+    {
+      "name": "timeTaken",
+      "xpath": "/html/body/table/tbody/tr/td/table[@class='wrapper']/tbody/tr/td/table[@class='tron']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[6]/tbody/tr[1]/td[@class='outsidegutter']/table/tbody/tr/td/table[@class='t11of12']/tbody/tr/td/table/tbody/tr/td/table[1]/tbody/tr/td[@class='Uber18_text_p1']",
+      "regex": ".* \\| (?<matcherGroup>.*)"
+    },
+    {
+      "name": "distanceTime",
+      "xpath": "/html/body/table/tbody/tr/td/table[@class='wrapper']/tbody/tr/td/table[@class='tron']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[@class='basetable']/tbody/tr/td/table[6]/tbody/tr[1]/td[@class='outsidegutter']/table/tbody/tr/td/table[@class='t11of12']/tbody/tr/td/table/tbody/tr/td/table[@class='t6of12']/tbody/tr/td[@class='desktopMap']/table/tbody/tr/td/div[@class='desktopMap']/img/@src"
+    }
+  ]
+}
