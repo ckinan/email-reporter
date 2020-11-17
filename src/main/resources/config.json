@@ -1,5 +1,5 @@
 {
-  "query": "label:Uber",
+  "query": "label:Uber <DATE_QUERY>",
   "fields": [
     {
       "name": "total",

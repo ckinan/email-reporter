@@ -27,6 +27,8 @@ import us.codecraft.xsoup.Xsoup;
 
 import java.io.*;
 import java.security.GeneralSecurityException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -87,11 +89,24 @@ public class Main {
                 .setApplicationName(APPLICATION_NAME)
                 .build();
 
+        long lastInternalDate = -1L;
+        ValueRange existingRows = serviceSheets.spreadsheets().values().get(spreadsheetId, "Main!A2:A").execute();
+        if(existingRows.getValues() != null) {
+            List<Object> lastRow = existingRows.getValues().get(existingRows.getValues().size()-1);
+            lastInternalDate = Long.parseLong(lastRow.get(0).toString());
+        }
+
         // Read configuration file
         ObjectMapper objectMapper = new ObjectMapper();
         InputStream in = Main.class.getResourceAsStream("/config.json");
         Map<String, Object> mapObject = objectMapper.readValue(in, Map.class);
         String query = mapObject.get("query").toString();
+        if (lastInternalDate != -1L) {
+            query = query.replaceAll("<DATE_QUERY>", " AND after:" + Main.dateToString(new Date(lastInternalDate)));
+        } else {
+            query = query.replaceAll("<DATE_QUERY>", "");
+        }
+
         List<Map<String, String>> fields = (List<Map<String, String>>) mapObject.get("fields");
 
         // Search operators in Gmail: https://support.google.com/mail/answer/7190?hl=en
@@ -108,27 +123,33 @@ public class Main {
             for (Message message : messages) {
                 System.out.printf("\n*** Message: %s ***\n", message.getId());
                 Message fullMessage = serviceGmail.users().messages().get("me", message.getId()).setFormat("full").execute();
-                String body = new String(Base64.decodeBase64(fullMessage.getPayload().getBody().getData().getBytes()));
 
-                Document document = Jsoup.parse(body);
+                if(fullMessage.getInternalDate() > lastInternalDate){
+                    String body = new String(Base64.decodeBase64(fullMessage.getPayload().getBody().getData().getBytes()));
 
-                List<Object> cellValues = new ArrayList<>();
+                    Document document = Jsoup.parse(body);
 
-                for(Map<String, String> field: fields) {
-                    String value = Main.readDocument(document, field.get("xpath"));
-                    if(field.get("regex") != null) {
-                        Pattern compile = Pattern.compile(field.get("regex"));
-                        Matcher matcher = compile.matcher(value);
-                        if(matcher.find()) {
-                            value = matcher.group("matcherGroup");
+                    List<Object> cellValues = new ArrayList<>();
+                    cellValues.add(fullMessage.getInternalDate());
+
+                    for(Map<String, String> field: fields) {
+                        String value = Main.readDocument(document, field.get("xpath"));
+                        if(field.get("regex") != null) {
+                            Pattern compile = Pattern.compile(field.get("regex"));
+                            Matcher matcher = compile.matcher(value);
+                            if(matcher.find()) {
+                                value = matcher.group("matcherGroup");
+                            }
                         }
+                        System.out.println(field.get("name") + ": " + value);
+                        cellValues.add(value);
                     }
-                    System.out.println(field.get("name") + ": " + value);
-                    cellValues.add(value);
-                }
 
-                newValues.add(cellValues);
+                    newValues.add(cellValues);
+                }
             }
+
+            Collections.sort(newValues, Comparator.comparingLong(value -> (long) value.get(0)));
 
             ValueRange valueRange = new ValueRange().setValues(newValues);
             serviceSheets.spreadsheets().values().append(spreadsheetId, range, valueRange)
@@ -148,5 +169,10 @@ public class Main {
             }
         }
         return null;
+    }
+
+    public static String dateToString(Date date) {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+        return dateFormat.format(date);
     }
 }
