@@ -1,7 +1,0 @@
-{
-  "query": "label:MyLabel",
-  "fields": {
-    "field_1": "//div[contains(@class, 'class_1')]",
-    "field_2": "//div[contains(@class, 'class_2')]"
-  }
-}

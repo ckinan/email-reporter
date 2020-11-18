@@ -36,6 +36,10 @@ public class Main {
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
     private static final Dotenv dotenv = Dotenv.load();
+    private static final String spreadsheetId = dotenv.get("GOOGLE_SHEET_ID");
+    private static final String sheetAllRange = "Main!A1:J";
+    private static final String sheetInternalDateRange = "Main!A1:A";
+    private static final String dateQueryExpression = "<DATE_QUERY>";
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -80,17 +84,14 @@ public class Main {
         Gmail serviceGmail = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
-
-        final String spreadsheetId = dotenv.get("GOOGLE_SHEET_ID");
-        final String range = "Main!A1:J";
         Sheets serviceSheets = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
 
-        long lastInternalDate = -1L;
-        ValueRange existingRows = serviceSheets.spreadsheets().values().get(spreadsheetId, "Main!A2:A").execute();
-        if(existingRows.getValues() != null) {
-            List<Object> lastRow = existingRows.getValues().get(existingRows.getValues().size()-1);
+        Long lastInternalDate = null;
+        ValueRange internalDates = serviceSheets.spreadsheets().values().get(spreadsheetId, sheetInternalDateRange).execute();
+        if(internalDates.getValues() != null) {
+            List<Object> lastRow = internalDates.getValues().get(internalDates.getValues().size() - 1);
             lastInternalDate = Long.parseLong(lastRow.get(0).toString());
         }
 
@@ -99,10 +100,10 @@ public class Main {
         InputStream in = Main.class.getResourceAsStream("/config.json");
         Map<String, Object> mapObject = objectMapper.readValue(in, Map.class);
         String query = mapObject.get("query").toString();
-        if (lastInternalDate != -1L) {
-            query = query.replaceAll("<DATE_QUERY>", " AND after:" + Main.dateToString(new Date(lastInternalDate)));
+        if (lastInternalDate != null) {
+            query = query.replaceAll(dateQueryExpression, " AND after:" + Main.dateToString(new Date(lastInternalDate)));
         } else {
-            query = query.replaceAll("<DATE_QUERY>", "");
+            query = query.replaceAll(dateQueryExpression, "");
         }
 
         List<Map<String, String>> fields = (List<Map<String, String>>) mapObject.get("fields");
@@ -114,15 +115,13 @@ public class Main {
         if (messages.isEmpty()) {
             System.out.println("No messages found.");
         } else {
-            System.out.println("Report:");
-
             List<List<Object>> newValues = new ArrayList<>();
 
             for (Message message : messages) {
-                System.out.printf("\n*** Message: %s ***\n", message.getId());
                 Message fullMessage = serviceGmail.users().messages().get("me", message.getId()).setFormat("full").execute();
 
-                if(fullMessage.getInternalDate() > lastInternalDate){
+                if(lastInternalDate != null && fullMessage.getInternalDate() > lastInternalDate){
+                    System.out.println("Processing message: " + message.getId());
                     String body = new String(Base64.decodeBase64(fullMessage.getPayload().getBody().getData().getBytes()));
 
                     Document document = Jsoup.parse(body);
@@ -139,21 +138,22 @@ public class Main {
                                 value = matcher.group("matcherGroup");
                             }
                         }
-                        System.out.println(field.get("name") + ": " + value);
                         cellValues.add(value);
                     }
 
                     newValues.add(cellValues);
+                } else {
+                    System.out.println("Skipping message: " + message.getId());
                 }
             }
 
             Collections.sort(newValues, Comparator.comparingLong(value -> (long) value.get(0)));
 
             ValueRange valueRange = new ValueRange().setValues(newValues);
-            serviceSheets.spreadsheets().values().append(spreadsheetId, range, valueRange)
+            serviceSheets.spreadsheets().values().append(spreadsheetId, sheetAllRange, valueRange)
                     .setValueInputOption("USER_ENTERED")
                     .execute();
-            System.out.printf("cells updated.");
+            System.out.println("Done.");
         }
     }
 
