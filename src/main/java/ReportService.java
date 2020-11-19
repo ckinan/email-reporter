@@ -46,8 +46,7 @@ public class ReportService {
         return lastInternalDate;
     }
 
-    public static String getQuery(Long lastInternalDate) {
-        String query = ReportService.CONFIG.getQuery();
+    public static String calculateQuery(Long lastInternalDate, String query) {
         if (lastInternalDate != null) {
             query = query.replaceAll(dateQueryExpression, " AND after:" + ReportService.dateToString(new Date(lastInternalDate)));
         } else {
@@ -63,7 +62,7 @@ public class ReportService {
                 .execute();
     }
 
-    public static List<List<Object>> calculateNewValues(List<Message> messages, Long lastInternalDate, List<Field> fields) throws IOException {
+    public static List<List<Object>> calculateNewValues(List<Message> messages, Long lastInternalDate) throws IOException {
         List<List<Object>> newValues = new ArrayList<>();
 
         for (Message message : messages) {
@@ -78,7 +77,7 @@ public class ReportService {
                 List<Object> cellValues = new ArrayList<>();
                 cellValues.add(fullMessage.getInternalDate());
 
-                for(Field field: fields) {
+                for(Field field: ReportService.CONFIG.getFields()) {
                     String value = ReportService.readDocument(document, field.getXpath());
                     if(field.getRegex() != null) {
                         Pattern compile = Pattern.compile(field.getRegex());
