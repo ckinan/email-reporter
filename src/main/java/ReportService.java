@@ -24,13 +24,13 @@ public class ReportService {
     private static final String sheetInternalDateRange = "Main!A1:A";
     private static final String dateQueryExpression = "<DATE_QUERY>";
     private static final String configFile = "/config.json";
-    public static Map<String, Object> CONFIG;
+    public static Config CONFIG;
 
     static {
         ObjectMapper objectMapper = new ObjectMapper();
         InputStream in = Main.class.getResourceAsStream(configFile);
         try {
-            CONFIG = objectMapper.readValue(in, Map.class);
+            CONFIG = objectMapper.readValue(in, Config.class);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -47,7 +47,7 @@ public class ReportService {
     }
 
     public static String getQuery(Long lastInternalDate) {
-        String query = ReportService.CONFIG.get("query").toString();
+        String query = ReportService.CONFIG.getQuery();
         if (lastInternalDate != null) {
             query = query.replaceAll(dateQueryExpression, " AND after:" + ReportService.dateToString(new Date(lastInternalDate)));
         } else {
@@ -63,7 +63,7 @@ public class ReportService {
                 .execute();
     }
 
-    public static List<List<Object>> calculateNewValues(List<Message> messages, Long lastInternalDate, List<Map<String, String>> fields) throws IOException {
+    public static List<List<Object>> calculateNewValues(List<Message> messages, Long lastInternalDate, List<Field> fields) throws IOException {
         List<List<Object>> newValues = new ArrayList<>();
 
         for (Message message : messages) {
@@ -78,10 +78,10 @@ public class ReportService {
                 List<Object> cellValues = new ArrayList<>();
                 cellValues.add(fullMessage.getInternalDate());
 
-                for(Map<String, String> field: fields) {
-                    String value = ReportService.readDocument(document, field.get("xpath"));
-                    if(field.get("regex") != null) {
-                        Pattern compile = Pattern.compile(field.get("regex"));
+                for(Field field: fields) {
+                    String value = ReportService.readDocument(document, field.getXpath());
+                    if(field.getRegex() != null) {
+                        Pattern compile = Pattern.compile(field.getRegex());
                         Matcher matcher = compile.matcher(value);
                         if(matcher.find()) {
                             value = matcher.group("matcherGroup");

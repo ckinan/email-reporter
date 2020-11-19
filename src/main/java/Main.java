@@ -8,7 +8,7 @@ public class Main {
     public static void main(String... args) throws IOException {
         Long lastInternalDate = ReportService.getLastInternalDate();
         String query = ReportService.getQuery(lastInternalDate);
-        List<Map<String, String>> fields = (List<Map<String, String>>) ReportService.CONFIG.get("fields");
+        List<Field> fields = ReportService.CONFIG.getFields();
 
         // Search operators in Gmail: https://support.google.com/mail/answer/7190?hl=en
         List<Message> messages = GoogleClient.GMAIL_CLIENT.users().messages().list("me").setQ(query).execute().getMessages();
