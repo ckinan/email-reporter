@@ -70,26 +70,7 @@ public class ReportService {
 
             if(lastInternalDate != null && fullMessage.getInternalDate() > lastInternalDate){
                 System.out.println("Processing message: " + message.getId());
-                String body = new String(Base64.decodeBase64(fullMessage.getPayload().getBody().getData().getBytes()));
-
-                Document document = Jsoup.parse(body);
-
-                List<Object> cellValues = new ArrayList<>();
-                cellValues.add(fullMessage.getInternalDate());
-
-                for(Field field: ReportService.CONFIG.getFields()) {
-                    String value = ReportService.readDocument(document, field.getXpath());
-                    if(field.getRegex() != null) {
-                        Pattern compile = Pattern.compile(field.getRegex());
-                        Matcher matcher = compile.matcher(value);
-                        if(matcher.find()) {
-                            value = matcher.group("matcherGroup");
-                        }
-                    }
-                    cellValues.add(value);
-                }
-
-                newValues.add(cellValues);
+                newValues.add(ReportService.calculateRowValues(fullMessage));
             } else {
                 System.out.println("Skipping message: " + message.getId());
             }
@@ -97,6 +78,28 @@ public class ReportService {
 
         Collections.sort(newValues, Comparator.comparingLong(value -> (long) value.get(0)));
         return newValues;
+    }
+
+    private static List<Object> calculateRowValues(Message fullMessage) {
+        String body = new String(Base64.decodeBase64(fullMessage.getPayload().getBody().getData().getBytes()));
+        Document document = Jsoup.parse(body);
+
+        List<Object> cellValues = new ArrayList<>();
+        cellValues.add(fullMessage.getInternalDate());
+
+        for(Field field: ReportService.CONFIG.getFields()) {
+            String value = ReportService.readDocument(document, field.getXpath());
+            if(field.getRegex() != null) {
+                Pattern compile = Pattern.compile(field.getRegex());
+                Matcher matcher = compile.matcher(value);
+                if(matcher.find()) {
+                    value = matcher.group("matcherGroup");
+                }
+            }
+            cellValues.add(value);
+        }
+
+        return cellValues;
     }
 
     public static String readDocument(Document doc, String xpath) {

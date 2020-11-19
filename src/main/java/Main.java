@@ -14,11 +14,18 @@ public class Main {
 
         if (messages.isEmpty()) {
             System.out.println("No messages found.");
-        } else {
-            List<List<Object>> newValues = ReportService.calculateNewValues(messages, lastInternalDate);
-            ReportService.appendRowsToSheets(newValues);
-            System.out.println("Done.");
+            return;
         }
+
+        List<List<Object>> newValues = ReportService.calculateNewValues(messages, lastInternalDate);
+
+        if(newValues.size() > 0) {
+            ReportService.appendRowsToSheets(newValues);
+        } else {
+            System.out.println("No rows to update.");
+        }
+
+        System.out.println("Done.");
     }
 
 }
