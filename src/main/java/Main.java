@@ -1,21 +1,7 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
-import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
-import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.Base64;
-import com.google.api.client.util.store.FileDataStoreFactory;
-import com.google.api.services.gmail.Gmail;
-import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
-import com.google.api.services.sheets.v4.Sheets;
-import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.jsoup.Jsoup;
@@ -32,64 +18,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Main {
-    private static final String APPLICATION_NAME = "Email Reporter";
-    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    private static final String TOKENS_DIRECTORY_PATH = "tokens";
     private static final Dotenv dotenv = Dotenv.load();
     private static final String spreadsheetId = dotenv.get("GOOGLE_SHEET_ID");
     private static final String sheetAllRange = "Main!A1:J";
     private static final String sheetInternalDateRange = "Main!A1:A";
     private static final String dateQueryExpression = "<DATE_QUERY>";
 
-    /**
-     * Global instance of the scopes required by this quickstart.
-     * If modifying these scopes, delete your previously saved tokens/ folder.
-     * See:
-     * - https://developers.google.com/gmail/api/auth/scopes
-     * - https://developers.google.com/sheets/api/guides/authorizing
-     */
-    private static final List<String> SCOPES = Arrays.asList(
-            GmailScopes.GMAIL_READONLY,
-            SheetsScopes.SPREADSHEETS
-    );
-    private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
-
-    /**
-     * Creates an authorized Credential object.
-     * @param HTTP_TRANSPORT The network HTTP Transport.
-     * @return An authorized Credential object.
-     * @throws IOException If the credentials.json file cannot be found.
-     */
-    private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
-        // Load client secrets.
-        InputStream in = Main.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
-        if (in == null) {
-            throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
-        }
-        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
-
-        // Build flow and trigger user authorization request.
-        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
-                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
-                .setAccessType("offline")
-                .build();
-        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
-        return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
-    }
-
     public static void main(String... args) throws IOException, GeneralSecurityException {
         // Build a new authorized API client service.
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        Gmail serviceGmail = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                .setApplicationName(APPLICATION_NAME)
-                .build();
-        Sheets serviceSheets = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                .setApplicationName(APPLICATION_NAME)
-                .build();
-
         Long lastInternalDate = null;
-        ValueRange internalDates = serviceSheets.spreadsheets().values().get(spreadsheetId, sheetInternalDateRange).execute();
+        ValueRange internalDates = GoogleClient.SHEETS_CLIENT.spreadsheets().values().get(spreadsheetId, sheetInternalDateRange).execute();
         if(internalDates.getValues() != null) {
             List<Object> lastRow = internalDates.getValues().get(internalDates.getValues().size() - 1);
             lastInternalDate = Long.parseLong(lastRow.get(0).toString());
@@ -109,7 +47,7 @@ public class Main {
         List<Map<String, String>> fields = (List<Map<String, String>>) mapObject.get("fields");
 
         // Search operators in Gmail: https://support.google.com/mail/answer/7190?hl=en
-        ListMessagesResponse listMessages = serviceGmail.users().messages().list("me").setQ(query).execute();
+        ListMessagesResponse listMessages = GoogleClient.GMAIL_CLIENT.users().messages().list("me").setQ(query).execute();
         List<Message> messages = listMessages.getMessages();
 
         if (messages.isEmpty()) {
@@ -118,7 +56,7 @@ public class Main {
             List<List<Object>> newValues = new ArrayList<>();
 
             for (Message message : messages) {
-                Message fullMessage = serviceGmail.users().messages().get("me", message.getId()).setFormat("full").execute();
+                Message fullMessage = GoogleClient.GMAIL_CLIENT.users().messages().get("me", message.getId()).setFormat("full").execute();
 
                 if(lastInternalDate != null && fullMessage.getInternalDate() > lastInternalDate){
                     System.out.println("Processing message: " + message.getId());
@@ -150,7 +88,7 @@ public class Main {
             Collections.sort(newValues, Comparator.comparingLong(value -> (long) value.get(0)));
 
             ValueRange valueRange = new ValueRange().setValues(newValues);
-            serviceSheets.spreadsheets().values().append(spreadsheetId, sheetAllRange, valueRange)
+            GoogleClient.SHEETS_CLIENT.spreadsheets().values().append(spreadsheetId, sheetAllRange, valueRange)
                     .setValueInputOption("USER_ENTERED")
                     .execute();
             System.out.println("Done.");
