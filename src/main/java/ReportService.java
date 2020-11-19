@@ -62,17 +62,29 @@ public class ReportService {
                 .execute();
     }
 
-    public static List<List<Object>> calculateNewValues(List<Message> messages, Long lastInternalDate) throws IOException {
+    public static List<String> getMessageIds(String query) throws IOException {
+        List<String> messageIds = new ArrayList<>();
+        // Search operators in Gmail: https://support.google.com/mail/answer/7190?hl=en
+        List<Message> messages = GoogleClient.GMAIL_CLIENT.users().messages().list("me").setQ(query).execute().getMessages();
+
+        for(Message message: messages) {
+            messageIds.add(message.getId());
+        }
+
+        return messageIds;
+    }
+
+    public static List<List<Object>> calculateNewValues(List<String> messageIds, Long lastInternalDate) throws IOException {
         List<List<Object>> newValues = new ArrayList<>();
 
-        for (Message message : messages) {
-            Message fullMessage = GoogleClient.GMAIL_CLIENT.users().messages().get("me", message.getId()).setFormat("full").execute();
+        for (String messageId : messageIds) {
+            Message fullMessage = GoogleClient.GMAIL_CLIENT.users().messages().get("me", messageId).setFormat("full").execute();
 
             if(lastInternalDate != null && fullMessage.getInternalDate() > lastInternalDate){
-                System.out.println("Processing message: " + message.getId());
+                System.out.println("Processing message: " + messageId);
                 newValues.add(ReportService.calculateRowValues(fullMessage));
             } else {
-                System.out.println("Skipping message: " + message.getId());
+                System.out.println("Skipping message: " + messageId);
             }
         }
 
