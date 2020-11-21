@@ -1,11 +1,11 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.util.Base64;
-import com.google.api.services.gmail.model.Message;
-import com.google.api.services.sheets.v4.model.ValueRange;
-import io.github.cdimascio.dotenv.Dotenv;
+import google.GoogleOperations;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import pojo.Config;
+import pojo.Field;
+import pojo.GmailMessage;
 import us.codecraft.xsoup.Xsoup;
 
 import java.io.IOException;
@@ -18,10 +18,6 @@ import java.util.regex.Pattern;
 
 public class ReportService {
 
-    private static final Dotenv dotenv = Dotenv.load();
-    private static final String spreadsheetId = dotenv.get("GOOGLE_SHEET_ID");
-    private static final String sheetAllRange = "Main!A1:J";
-    private static final String sheetInternalDateRange = "Main!A1:A";
     private static final String dateQueryExpression = "<DATE_QUERY>";
     private static final String configFile = "/config.json";
     public static Config CONFIG;
@@ -38,9 +34,8 @@ public class ReportService {
 
     public static Long getLastInternalDate() throws IOException {
         Long lastInternalDate = null;
-        ValueRange internalDates = GoogleClient.SHEETS_CLIENT.spreadsheets().values().get(spreadsheetId, sheetInternalDateRange).execute();
-        if(internalDates.getValues() != null) {
-            List<Object> lastRow = internalDates.getValues().get(internalDates.getValues().size() - 1);
+        List<Object> lastRow = GoogleOperations.getLastRow();
+        if(lastRow != null) {
             lastInternalDate = Long.parseLong(lastRow.get(0).toString());
         }
         return lastInternalDate;
@@ -56,33 +51,22 @@ public class ReportService {
     }
 
     public static void appendRowsToSheets(List<List<Object>> newValues) throws IOException {
-        ValueRange valueRange = new ValueRange().setValues(newValues);
-        GoogleClient.SHEETS_CLIENT.spreadsheets().values().append(spreadsheetId, sheetAllRange, valueRange)
-                .setValueInputOption("USER_ENTERED")
-                .execute();
+        GoogleOperations.appendRowsToSheets(newValues);
     }
 
     public static List<String> getMessageIds(String query) throws IOException {
-        List<String> messageIds = new ArrayList<>();
-        // Search operators in Gmail: https://support.google.com/mail/answer/7190?hl=en
-        List<Message> messages = GoogleClient.GMAIL_CLIENT.users().messages().list("me").setQ(query).execute().getMessages();
-
-        for(Message message: messages) {
-            messageIds.add(message.getId());
-        }
-
-        return messageIds;
+        return GoogleOperations.getMessageIds(query);
     }
 
     public static List<List<Object>> calculateNewValues(List<String> messageIds, Long lastInternalDate) throws IOException {
         List<List<Object>> newValues = new ArrayList<>();
 
         for (String messageId : messageIds) {
-            Message fullMessage = GoogleClient.GMAIL_CLIENT.users().messages().get("me", messageId).setFormat("full").execute();
+            GmailMessage message = GoogleOperations.getMessage(messageId);
 
-            if(lastInternalDate != null && fullMessage.getInternalDate() > lastInternalDate){
+            if(lastInternalDate != null && message.getInternalDate() > lastInternalDate){
                 System.out.println("Processing message: " + messageId);
-                newValues.add(ReportService.calculateRowValues(fullMessage));
+                newValues.add(ReportService.calculateRowValues(message.getInternalDate(), message.getBody()));
             } else {
                 System.out.println("Skipping message: " + messageId);
             }
@@ -92,12 +76,11 @@ public class ReportService {
         return newValues;
     }
 
-    private static List<Object> calculateRowValues(Message fullMessage) {
-        String body = new String(Base64.decodeBase64(fullMessage.getPayload().getBody().getData().getBytes()));
+    private static List<Object> calculateRowValues(Long internalDate, String body) {
         Document document = Jsoup.parse(body);
 
         List<Object> cellValues = new ArrayList<>();
-        cellValues.add(fullMessage.getInternalDate());
+        cellValues.add(internalDate);
 
         for(Field field: ReportService.CONFIG.getFields()) {
             String value = ReportService.readDocument(document, field.getXpath());
