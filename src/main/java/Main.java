@@ -16,9 +16,9 @@ import java.util.regex.Pattern;
 public class Main {
 
     public static void main(String... args) throws IOException {
-        Long lastInternalDate = Main.getLastInternalDate();
-        String query = ConfigService.calculateQuery(lastInternalDate, ConfigMapper.CONFIG.getQuery());
-        List<String> messageIds = Main.getMessageIds(query);
+        Long lastInternalDate = Main.calculateLastInternalDate();
+        String query = ConfigService.calculateQuery(lastInternalDate);
+        List<String> messageIds = GoogleOperations.getMessageIds(query);
 
         if (messageIds.isEmpty()) {
             System.out.println("No messages found.");
@@ -29,7 +29,7 @@ public class Main {
         List<List<Object>> newValues = Main.calculateNewValues(messageIds, lastInternalDate);
 
         if(newValues.size() > 0) {
-            Main.appendRowsToSheets(newValues);
+            GoogleOperations.appendRowsToSheets(newValues);
         } else {
             System.out.println("No rows to update.");
         }
@@ -37,21 +37,13 @@ public class Main {
         System.out.println("Done.");
     }
 
-    public static Long getLastInternalDate() throws IOException {
+    public static Long calculateLastInternalDate() throws IOException {
         Long lastInternalDate = null;
         List<Object> lastRow = GoogleOperations.getLastRow();
         if(lastRow != null) {
             lastInternalDate = Long.parseLong(lastRow.get(0).toString());
         }
         return lastInternalDate;
-    }
-
-    public static void appendRowsToSheets(List<List<Object>> newValues) throws IOException {
-        GoogleOperations.appendRowsToSheets(newValues);
-    }
-
-    public static List<String> getMessageIds(String query) throws IOException {
-        return GoogleOperations.getMessageIds(query);
     }
 
     public static List<List<Object>> calculateNewValues(List<String> messageIds, Long lastInternalDate) throws IOException {
