@@ -1,25 +1,22 @@
 package config;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import utils.DateUtils;
+
 import java.util.Date;
 
 public class ConfigService {
 
     private static final String dateQueryExpression = "<DATE_QUERY>";
+    private static final String dateFormat = "yyyy/MM/dd";
 
     public static String calculateQuery(Long lastInternalDate, String query) {
         if (lastInternalDate != null) {
-            query = query.replaceAll(dateQueryExpression, " AND after:" + ConfigService.dateToString(new Date(lastInternalDate)));
-        } else {
-            query = query.replaceAll(dateQueryExpression, "");
+            return query.replaceAll(
+                    dateQueryExpression,
+                    " AND after:" + DateUtils.dateToString(new Date(lastInternalDate), dateFormat)
+            );
         }
-        return query;
-    }
-
-    public static String dateToString(Date date) {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-        return dateFormat.format(date);
+        return query.replaceAll(dateQueryExpression, "");
     }
 
 }
