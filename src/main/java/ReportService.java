@@ -1,15 +1,14 @@
-import com.fasterxml.jackson.databind.ObjectMapper;
+import config.ConfigMapper;
+import config.ConfigService;
 import google.GoogleOperations;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import pojo.Config;
 import pojo.Field;
 import pojo.GmailMessage;
 import us.codecraft.xsoup.Xsoup;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -18,20 +17,6 @@ import java.util.regex.Pattern;
 
 public class ReportService {
 
-    private static final String dateQueryExpression = "<DATE_QUERY>";
-    private static final String configFile = "/config.json";
-    public static Config CONFIG;
-
-    static {
-        ObjectMapper objectMapper = new ObjectMapper();
-        InputStream in = Main.class.getResourceAsStream(configFile);
-        try {
-            CONFIG = objectMapper.readValue(in, Config.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static Long getLastInternalDate() throws IOException {
         Long lastInternalDate = null;
         List<Object> lastRow = GoogleOperations.getLastRow();
@@ -39,15 +24,6 @@ public class ReportService {
             lastInternalDate = Long.parseLong(lastRow.get(0).toString());
         }
         return lastInternalDate;
-    }
-
-    public static String calculateQuery(Long lastInternalDate, String query) {
-        if (lastInternalDate != null) {
-            query = query.replaceAll(dateQueryExpression, " AND after:" + ReportService.dateToString(new Date(lastInternalDate)));
-        } else {
-            query = query.replaceAll(dateQueryExpression, "");
-        }
-        return query;
     }
 
     public static void appendRowsToSheets(List<List<Object>> newValues) throws IOException {
@@ -82,7 +58,7 @@ public class ReportService {
         List<Object> cellValues = new ArrayList<>();
         cellValues.add(internalDate);
 
-        for(Field field: ReportService.CONFIG.getFields()) {
+        for(Field field: ConfigMapper.getConfig().getFields()) {
             String value = ReportService.readDocument(document, field.getXpath());
             if(field.getRegex() != null) {
                 Pattern compile = Pattern.compile(field.getRegex());
@@ -109,9 +85,6 @@ public class ReportService {
         return null;
     }
 
-    public static String dateToString(Date date) {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-        return dateFormat.format(date);
-    }
+
 
 }

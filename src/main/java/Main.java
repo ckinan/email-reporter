@@ -1,3 +1,6 @@
+import config.ConfigMapper;
+import config.ConfigService;
+
 import java.io.*;
 import java.util.*;
 
@@ -5,7 +8,7 @@ public class Main {
 
     public static void main(String... args) throws IOException {
         Long lastInternalDate = ReportService.getLastInternalDate();
-        String query = ReportService.calculateQuery(lastInternalDate, ReportService.CONFIG.getQuery());
+        String query = ConfigService.calculateQuery(lastInternalDate, ConfigMapper.getConfig().getQuery());
         List<String> messageIds = ReportService.getMessageIds(query);
 
         if (messageIds.isEmpty()) {
