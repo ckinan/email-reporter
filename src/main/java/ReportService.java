@@ -1,5 +1,4 @@
 import config.ConfigMapper;
-import config.ConfigService;
 import google.GoogleOperations;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -9,8 +8,6 @@ import pojo.GmailMessage;
 import us.codecraft.xsoup.Xsoup;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,7 +55,7 @@ public class ReportService {
         List<Object> cellValues = new ArrayList<>();
         cellValues.add(internalDate);
 
-        for(Field field: ConfigMapper.getConfig().getFields()) {
+        for(Field field: ConfigMapper.CONFIG.getFields()) {
             String value = ReportService.readDocument(document, field.getXpath());
             if(field.getRegex() != null) {
                 Pattern compile = Pattern.compile(field.getRegex());

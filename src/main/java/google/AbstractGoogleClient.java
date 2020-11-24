@@ -10,9 +10,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
-import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
-import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 
 import java.io.FileNotFoundException;
@@ -23,7 +21,11 @@ import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.List;
 
-public class GoogleClient {
+public class AbstractGoogleClient {
+
+    public static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+    public static final String APPLICATION_NAME = "Email Reporter";
+    public static NetHttpTransport HTTP_TRANSPORT;
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -36,24 +38,15 @@ public class GoogleClient {
             GmailScopes.GMAIL_READONLY,
             SheetsScopes.SPREADSHEETS
     );
-    private static NetHttpTransport HTTP_TRANSPORT;
-    private static final String APPLICATION_NAME = "Email Reporter";
-    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
-    public static Gmail GMAIL_CLIENT;
-    public static Sheets SHEETS_CLIENT;
 
     static {
         try {
             HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-            GMAIL_CLIENT = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, GoogleClient.getCredentials(HTTP_TRANSPORT))
-                    .setApplicationName(APPLICATION_NAME)
-                    .build();
-            SHEETS_CLIENT = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, GoogleClient.getCredentials(HTTP_TRANSPORT))
-                    .setApplicationName(APPLICATION_NAME)
-                    .build();
-        } catch (IOException | GeneralSecurityException e) {
+        } catch (GeneralSecurityException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -64,9 +57,9 @@ public class GoogleClient {
      * @return An authorized Credential object.
      * @throws IOException If the credentials.json file cannot be found.
      */
-    private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
+    public static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
-        InputStream in = GoogleClient.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+        InputStream in = GmailClient.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
         if (in == null) {
             throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
         }

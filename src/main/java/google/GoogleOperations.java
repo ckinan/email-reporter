@@ -18,7 +18,7 @@ public class GoogleOperations {
     private static final String sheetInternalDateRange = "Main!A1:A";
 
     public static List<Object> getLastRow() throws IOException {
-        ValueRange internalDates = GoogleClient.SHEETS_CLIENT.spreadsheets().values().get(spreadsheetId, sheetInternalDateRange).execute();
+        ValueRange internalDates = SheetsClient.CLIENT.spreadsheets().values().get(spreadsheetId, sheetInternalDateRange).execute();
         if(internalDates.getValues() != null) {
             return internalDates.getValues().get(internalDates.getValues().size() - 1);
         }
@@ -27,7 +27,7 @@ public class GoogleOperations {
 
     public static void appendRowsToSheets(List<List<Object>> newValues) throws IOException {
         ValueRange valueRange = new ValueRange().setValues(newValues);
-        GoogleClient.SHEETS_CLIENT.spreadsheets().values().append(spreadsheetId, sheetAllRange, valueRange)
+        SheetsClient.CLIENT.spreadsheets().values().append(spreadsheetId, sheetAllRange, valueRange)
                 .setValueInputOption("USER_ENTERED")
                 .execute();
     }
@@ -35,7 +35,7 @@ public class GoogleOperations {
     public static List<String> getMessageIds(String query) throws IOException {
         List<String> messageIds = new ArrayList<>();
         // Search operators in Gmail: https://support.google.com/mail/answer/7190?hl=en
-        List<Message> messages = GoogleClient.GMAIL_CLIENT.users().messages().list("me").setQ(query).execute().getMessages();
+        List<Message> messages = GmailClient.CLIENT.users().messages().list("me").setQ(query).execute().getMessages();
 
         for(Message message: messages) {
             messageIds.add(message.getId());
@@ -45,7 +45,7 @@ public class GoogleOperations {
     }
 
     public static GmailMessage getMessage(String messageId) throws IOException {
-        Message fullMessage = GoogleClient.GMAIL_CLIENT.users().messages().get("me", messageId).setFormat("full").execute();
+        Message fullMessage = GmailClient.CLIENT.users().messages().get("me", messageId).setFormat("full").execute();
         GmailMessage gmailMessage = new GmailMessage();
         gmailMessage.setInternalDate(fullMessage.getInternalDate());
         gmailMessage.setBody(new String(Base64.decodeBase64(fullMessage.getPayload().getBody().getData().getBytes())));

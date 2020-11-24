@@ -6,15 +6,13 @@ import pojo.Config;
 import java.io.IOException;
 import java.io.InputStream;
 
-public enum ConfigMapper {
+public class ConfigMapper {
 
-    INSTANCE;
+    private static final String dateQueryExpression = "<DATE_QUERY>";
+    private static final String configFile = "/config.json";
+    public static Config CONFIG;
 
-    private final String dateQueryExpression = "<DATE_QUERY>";
-    private final String configFile = "/config.json";
-    private Config CONFIG;
-
-    ConfigMapper() {
+    static {
         ObjectMapper objectMapper = new ObjectMapper();
         InputStream in = ConfigService.class.getResourceAsStream(configFile);
         try {
@@ -22,10 +20,6 @@ public enum ConfigMapper {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public static Config getConfig() {
-        return INSTANCE.CONFIG;
     }
 
 }

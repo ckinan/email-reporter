@@ -8,7 +8,7 @@ public class Main {
 
     public static void main(String... args) throws IOException {
         Long lastInternalDate = ReportService.getLastInternalDate();
-        String query = ConfigService.calculateQuery(lastInternalDate, ConfigMapper.getConfig().getQuery());
+        String query = ConfigService.calculateQuery(lastInternalDate, ConfigMapper.CONFIG.getQuery());
         List<String> messageIds = ReportService.getMessageIds(query);
 
         if (messageIds.isEmpty()) {
