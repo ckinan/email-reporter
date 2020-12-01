@@ -1,13 +1,9 @@
 package google;
 
-import com.google.api.client.util.Base64;
-import com.google.api.services.gmail.model.Message;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import io.github.cdimascio.dotenv.Dotenv;
-import pojo.GmailMessage;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class GoogleOperations {
@@ -30,26 +26,6 @@ public class GoogleOperations {
         SheetsClient.CLIENT.spreadsheets().values().append(spreadsheetId, sheetAllRange, valueRange)
                 .setValueInputOption("USER_ENTERED")
                 .execute();
-    }
-
-    public static List<String> getMessageIds(String query) throws IOException {
-        List<String> messageIds = new ArrayList<>();
-        // Search operators in Gmail: https://support.google.com/mail/answer/7190?hl=en
-        List<Message> messages = GmailClient.CLIENT.users().messages().list("me").setQ(query).execute().getMessages();
-
-        for(Message message: messages) {
-            messageIds.add(message.getId());
-        }
-
-        return messageIds;
-    }
-
-    public static GmailMessage getMessage(String messageId) throws IOException {
-        Message fullMessage = GmailClient.CLIENT.users().messages().get("me", messageId).setFormat("full").execute();
-        GmailMessage gmailMessage = new GmailMessage();
-        gmailMessage.setInternalDate(fullMessage.getInternalDate());
-        gmailMessage.setBody(new String(Base64.decodeBase64(fullMessage.getPayload().getBody().getData().getBytes())));
-        return gmailMessage;
     }
 
 }
