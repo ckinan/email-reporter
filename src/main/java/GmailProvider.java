@@ -19,6 +19,11 @@ import java.util.regex.Pattern;
 public class GmailProvider implements IEmailProvider {
 
     private final static String QUERY_EXPRESSION = "<DATE_QUERY>";
+    private ConfigMapper configMapper;
+
+    public GmailProvider(String configFile) throws IOException {
+        this.configMapper = new ConfigMapper(configFile);
+    }
 
     @Override
     public Long getWatermark() throws IOException {
@@ -66,7 +71,7 @@ public class GmailProvider implements IEmailProvider {
 
     @Override
     public String calculateQuery(Long watermark) {
-        final String query = ConfigMapper.CONFIG.getQuery();
+        final String query = this.configMapper.getConfig().getQuery();
 
         if (watermark != null) {
             return query.replaceAll(
@@ -84,7 +89,7 @@ public class GmailProvider implements IEmailProvider {
         List<Object> cellValues = new ArrayList<>();
         cellValues.add(internalDate);
 
-        for(Field field: ConfigMapper.CONFIG.getFields()) {
+        for(Field field: this.configMapper.getConfig().getFields()) {
             String value = this.readDocument(document, field.getXpath());
             if(field.getRegex() != null) {
                 Pattern compile = Pattern.compile(field.getRegex());

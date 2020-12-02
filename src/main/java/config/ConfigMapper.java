@@ -8,17 +8,16 @@ import java.io.InputStream;
 
 public class ConfigMapper {
 
-    private static final String configFile = "/config.json";
-    public static Config CONFIG;
+    private Config config;
 
-    static {
+    public ConfigMapper(String configFile) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         InputStream in = ConfigMapper.class.getResourceAsStream(configFile);
-        try {
-            CONFIG = objectMapper.readValue(in, Config.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.config = objectMapper.readValue(in, Config.class);
+    }
+
+    public Config getConfig() {
+        return this.config;
     }
 
 }

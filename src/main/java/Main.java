@@ -6,7 +6,7 @@ import java.util.*;
 public class Main {
 
     public static void main(String... args) throws IOException {
-        IEmailProvider emailProvider = new GmailProvider();
+        IEmailProvider emailProvider = new GmailProvider("/gmail-config.json");
 
         Long watermark = emailProvider.getWatermark();
         String query = emailProvider.calculateQuery(watermark);

@@ -4,5 +4,4 @@
 credentials.json
 StoredCredential
 target
-# config.json
 .env
