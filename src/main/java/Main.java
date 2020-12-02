@@ -6,7 +6,7 @@ import java.util.*;
 public class Main {
 
     public static void main(String... args) throws IOException {
-        IEmailProvider emailProvider = new GmailProvider("/gmail-config.json");
+        IEmailProvider emailProvider = new GmailProvider("/uber-gmail-config.json");
 
         // List of lists represents Rows and columns
         List<List<Object>> newValues = emailProvider.generateReport();
