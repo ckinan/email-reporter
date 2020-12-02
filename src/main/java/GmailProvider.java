@@ -5,10 +5,8 @@ import google.GmailClient;
 import google.GoogleOperations;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import pojo.Field;
 import pojo.GmailMessage;
-import us.codecraft.xsoup.Xsoup;
 import utils.DateUtils;
 
 import java.io.IOException;
@@ -16,7 +14,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class GmailProvider implements IEmailProvider {
+public class GmailProvider extends AbstractEmailProvider implements IEmailProvider {
 
     private final static String QUERY_EXPRESSION = "<DATE_QUERY>";
     private ConfigMapper configMapper;
@@ -55,7 +53,10 @@ public class GmailProvider implements IEmailProvider {
         List<List<Object>> newValues = new ArrayList<>();
 
         for (String messageId : messageIds) {
-            GmailMessage message = this.getMessage(messageId);
+            Message fullMessage = GmailClient.CLIENT.users().messages().get("me", messageId).setFormat("full").execute();
+            GmailMessage message = new GmailMessage();
+            message.setWatermark(fullMessage.getInternalDate());
+            message.setBody(new String(Base64.decodeBase64(fullMessage.getPayload().getBody().getData().getBytes())));
 
             if(watermark != null && message.getWatermark() > watermark){
                 System.out.println("Processing message: " + messageId);
@@ -83,6 +84,21 @@ public class GmailProvider implements IEmailProvider {
         return query.replaceAll(QUERY_EXPRESSION, "");
     }
 
+    @Override
+    public List<List<Object>> generateReport() throws IOException {
+        Long watermark = this.getWatermark();
+        String query = this.calculateQuery(watermark);
+        List<String> messageIds = this.getPendingMessageIds(query);
+
+        if (messageIds.isEmpty()) {
+            System.out.println("No messages found.");
+            return null;
+        }
+
+        // List of lists represents Rows and columns
+        return this.calculateNewValues(messageIds, watermark);
+    }
+
     private List<Object> calculateRowValues(Long internalDate, String body) {
         Document document = Jsoup.parse(body);
 
@@ -102,27 +118,6 @@ public class GmailProvider implements IEmailProvider {
         }
 
         return cellValues;
-    }
-
-    private String readDocument(Document doc, String xpath) {
-        // TODO : it should live somewhere else, perhaps its own util class?
-        List<Element> elements = Xsoup.compile(xpath).evaluate(doc).getElements();
-        for(Element e: elements) {
-            if("img".equals(e.tagName()) && xpath.endsWith("@src")) {
-                return e.attributes().get("src");
-            } else {
-                return e.text();
-            }
-        }
-        return null;
-    }
-
-    private GmailMessage getMessage(String messageId) throws IOException {
-        Message fullMessage = GmailClient.CLIENT.users().messages().get("me", messageId).setFormat("full").execute();
-        GmailMessage gmailMessage = new GmailMessage();
-        gmailMessage.setWatermark(fullMessage.getInternalDate());
-        gmailMessage.setBody(new String(Base64.decodeBase64(fullMessage.getPayload().getBody().getData().getBytes())));
-        return gmailMessage;
     }
 
 }

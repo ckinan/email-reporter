@@ -8,19 +8,10 @@ public class Main {
     public static void main(String... args) throws IOException {
         IEmailProvider emailProvider = new GmailProvider("/gmail-config.json");
 
-        Long watermark = emailProvider.getWatermark();
-        String query = emailProvider.calculateQuery(watermark);
-        List<String> messageIds = emailProvider.getPendingMessageIds(query);
-
-        if (messageIds.isEmpty()) {
-            System.out.println("No messages found.");
-            return;
-        }
-
         // List of lists represents Rows and columns
-        List<List<Object>> newValues = emailProvider.calculateNewValues(messageIds, watermark);
+        List<List<Object>> newValues = emailProvider.generateReport();
 
-        if(newValues.size() > 0) {
+        if(newValues != null && newValues.size() > 0) {
             GoogleOperations.appendRowsToSheets(newValues);
         } else {
             System.out.println("No rows to update.");
