@@ -52,9 +52,9 @@ public class GmailProvider implements IEmailProvider {
         for (String messageId : messageIds) {
             GmailMessage message = this.getMessage(messageId);
 
-            if(watermark != null && message.getInternalDate() > watermark){
+            if(watermark != null && message.getWatermark() > watermark){
                 System.out.println("Processing message: " + messageId);
-                newValues.add(this.calculateRowValues(message.getInternalDate(), message.getBody()));
+                newValues.add(this.calculateRowValues(message.getWatermark(), message.getBody()));
             } else {
                 System.out.println("Skipping message: " + messageId);
             }
@@ -115,7 +115,7 @@ public class GmailProvider implements IEmailProvider {
     private GmailMessage getMessage(String messageId) throws IOException {
         Message fullMessage = GmailClient.CLIENT.users().messages().get("me", messageId).setFormat("full").execute();
         GmailMessage gmailMessage = new GmailMessage();
-        gmailMessage.setInternalDate(fullMessage.getInternalDate());
+        gmailMessage.setWatermark(fullMessage.getInternalDate());
         gmailMessage.setBody(new String(Base64.decodeBase64(fullMessage.getPayload().getBody().getData().getBytes())));
         return gmailMessage;
     }

@@ -2,15 +2,15 @@ package pojo;
 
 public class GmailMessage {
 
-    private Long internalDate;
+    private Long watermark;
     private String body;
 
-    public Long getInternalDate() {
-        return internalDate;
+    public Long getWatermark() {
+        return watermark;
     }
 
-    public void setInternalDate(Long internalDate) {
-        this.internalDate = internalDate;
+    public void setWatermark(Long watermark) {
+        this.watermark = watermark;
     }
 
     public String getBody() {
