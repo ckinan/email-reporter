@@ -6,7 +6,7 @@ import google.GoogleOperations;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import pojo.Field;
-import pojo.GmailMessage;
+import pojo.EmailMessage;
 import utils.DateUtils;
 
 import java.io.IOException;
@@ -54,7 +54,7 @@ public class GmailProvider extends AbstractEmailProvider implements IEmailProvid
 
         for (String messageId : messageIds) {
             Message fullMessage = GmailClient.CLIENT.users().messages().get("me", messageId).setFormat("full").execute();
-            GmailMessage message = new GmailMessage();
+            EmailMessage message = new EmailMessage();
             message.setWatermark(fullMessage.getInternalDate());
             message.setBody(new String(Base64.decodeBase64(fullMessage.getPayload().getBody().getData().getBytes())));
 

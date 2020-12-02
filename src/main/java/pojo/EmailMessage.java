@@ -1,6 +1,6 @@
 package pojo;
 
-public class GmailMessage {
+public class EmailMessage {
 
     private Long watermark;
     private String body;
