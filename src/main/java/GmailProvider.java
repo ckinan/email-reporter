@@ -9,16 +9,16 @@ import org.jsoup.nodes.Element;
 import pojo.Field;
 import pojo.GmailMessage;
 import us.codecraft.xsoup.Xsoup;
+import utils.DateUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class GmailProvider implements IEmailProvider {
+
+    private final static String QUERY_EXPRESSION = "<DATE_QUERY>";
 
     @Override
     public Long getWatermark() throws IOException {
@@ -62,6 +62,20 @@ public class GmailProvider implements IEmailProvider {
 
         Collections.sort(newValues, Comparator.comparingLong(value -> (long) value.get(0)));
         return newValues;
+    }
+
+    @Override
+    public String calculateQuery(Long watermark) {
+        final String query = ConfigMapper.CONFIG.getQuery();
+
+        if (watermark != null) {
+            return query.replaceAll(
+                    QUERY_EXPRESSION,
+                    " AND after:" + DateUtils.dateToString(new Date(watermark), "yyyy/MM/dd")
+            );
+        }
+
+        return query.replaceAll(QUERY_EXPRESSION, "");
     }
 
     private List<Object> calculateRowValues(Long internalDate, String body) {

@@ -1,4 +1,3 @@
-import config.ConfigService;
 import google.GoogleOperations;
 
 import java.io.*;
@@ -10,7 +9,7 @@ public class Main {
         IEmailProvider emailProvider = new GmailProvider();
 
         Long watermark = emailProvider.getWatermark();
-        String query = ConfigService.calculateQuery(watermark);
+        String query = emailProvider.calculateQuery(watermark);
         List<String> messageIds = emailProvider.getPendingMessageIds(query);
 
         if (messageIds.isEmpty()) {
