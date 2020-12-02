@@ -1,3 +1,5 @@
+package core;
+
 import com.google.api.client.util.Base64;
 import com.google.api.services.gmail.model.Message;
 import config.ConfigMapper;

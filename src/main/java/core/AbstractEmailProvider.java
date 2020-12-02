@@ -1,3 +1,5 @@
+package core;
+
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import us.codecraft.xsoup.Xsoup;

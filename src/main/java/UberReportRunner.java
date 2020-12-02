@@ -1,4 +1,7 @@
-import google.GoogleOperations;
+import core.GmailProvider;
+import core.GoogleSheetsReportWriter;
+import core.IEmailProvider;
+import core.IReportWriter;
 
 import java.io.*;
 import java.util.*;
