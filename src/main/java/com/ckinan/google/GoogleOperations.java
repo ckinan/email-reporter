@@ -1,4 +1,4 @@
-package google;
+package com.ckinan.google;
 
 import com.google.api.services.sheets.v4.model.ValueRange;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -6,7 +6,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import java.io.IOException;
 import java.util.List;
 
-// TODO : Can I get rid of this class? Or would it be best to move all direct operations against google to here?
+// TODO : Can I get rid of this class? Or would it be best to move all direct operations against com.ckinan.google to here?
 public class GoogleOperations {
 
     private static final Dotenv dotenv = Dotenv.load();

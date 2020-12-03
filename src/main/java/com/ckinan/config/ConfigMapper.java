@@ -1,7 +1,7 @@
-package config;
+package com.ckinan.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import pojo.Config;
+import com.ckinan.pojo.Config;
 
 import java.io.IOException;
 import java.io.InputStream;

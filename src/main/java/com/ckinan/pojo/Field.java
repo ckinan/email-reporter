@@ -1,4 +1,4 @@
-package pojo;
+package com.ckinan.pojo;
 
 public class Field {
 

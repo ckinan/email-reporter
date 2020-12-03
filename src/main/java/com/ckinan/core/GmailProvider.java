@@ -1,15 +1,17 @@
-package core;
+package com.ckinan.core;
 
 import com.google.api.client.util.Base64;
 import com.google.api.services.gmail.model.Message;
-import config.ConfigMapper;
-import google.GmailClient;
-import google.GoogleOperations;
+import com.ckinan.config.ConfigMapper;
+import com.ckinan.google.GmailClient;
+import com.ckinan.google.GoogleOperations;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import pojo.Field;
-import pojo.EmailMessage;
-import utils.DateUtils;
+import com.ckinan.pojo.Field;
+import com.ckinan.pojo.EmailMessage;
+import com.ckinan.utils.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
@@ -17,6 +19,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class GmailProvider extends AbstractEmailProvider implements IEmailProvider {
+
+    Logger logger = LoggerFactory.getLogger(GmailProvider.class);
 
     private final static String QUERY_EXPRESSION = "<DATE_QUERY>";
     private ConfigMapper configMapper;
@@ -61,10 +65,10 @@ public class GmailProvider extends AbstractEmailProvider implements IEmailProvid
             message.setBody(new String(Base64.decodeBase64(fullMessage.getPayload().getBody().getData().getBytes())));
 
             if(watermark != null && message.getWatermark() > watermark){
-                System.out.println("Processing message: " + messageId);
+                logger.info("Processing message: " + messageId);
                 newValues.add(this.calculateRowValues(message.getWatermark(), message.getBody()));
             } else {
-                System.out.println("Skipping message: " + messageId);
+                logger.info("Skipping message: " + messageId);
             }
         }
 
@@ -93,7 +97,7 @@ public class GmailProvider extends AbstractEmailProvider implements IEmailProvid
         List<String> messageIds = this.getPendingMessageIds(query);
 
         if (messageIds.isEmpty()) {
-            System.out.println("No messages found.");
+            logger.info("No messages found.");
             return null;
         }
 

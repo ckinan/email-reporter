@@ -1,4 +1,4 @@
-package core;
+package com.ckinan.core;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

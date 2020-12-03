@@ -1,4 +1,4 @@
-package pojo;
+package com.ckinan.pojo;
 
 import java.util.List;
 

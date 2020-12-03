@@ -1,4 +1,4 @@
-package utils;
+package com.ckinan.utils;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

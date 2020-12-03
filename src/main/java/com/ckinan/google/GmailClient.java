@@ -1,4 +1,4 @@
-package google;
+package com.ckinan.google;
 
 import com.google.api.services.gmail.Gmail;
 
