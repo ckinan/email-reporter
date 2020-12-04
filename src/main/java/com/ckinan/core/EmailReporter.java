@@ -1,14 +1,10 @@
 package com.ckinan.core;
 
-import com.google.api.client.util.Base64;
-import com.google.api.services.gmail.model.Message;
 import com.ckinan.config.ConfigMapper;
-import com.ckinan.google.GmailClient;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import com.ckinan.pojo.Field;
 import com.ckinan.pojo.EmailMessage;
-import com.ckinan.utils.DateUtils;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,13 +19,14 @@ public class EmailReporter {
 
     Logger logger = LoggerFactory.getLogger(EmailReporter.class);
 
-    private final static String QUERY_EXPRESSION = "<DATE_QUERY>";
     private ConfigMapper configMapper;
     private IReportDataSource reportDataSource;
+    private IEmailReader emailReader;
 
-    public EmailReporter(String configFile, IReportDataSource reportDataSource) throws IOException {
+    public EmailReporter(String configFile, IReportDataSource reportDataSource, IEmailReader emailReader) throws IOException {
         this.configMapper = new ConfigMapper(configFile);
         this.reportDataSource = reportDataSource;
+        this.emailReader = emailReader;
     }
 
     public Long getWatermark() throws IOException {
@@ -43,26 +40,11 @@ public class EmailReporter {
         return watermark;
     }
 
-    public List<String> getPendingMessageIds(String query) throws IOException {
-        List<String> messageIds = new ArrayList<>();
-        // Search operators in Gmail: https://support.google.com/mail/answer/7190?hl=en
-        List<Message> messages = GmailClient.CLIENT.users().messages().list("me").setQ(query).execute().getMessages();
-
-        for(Message message: messages) {
-            messageIds.add(message.getId());
-        }
-
-        return messageIds;
-    }
-
     public List<List<Object>> calculateNewValues(List<String> messageIds, Long watermark) throws IOException {
         List<List<Object>> newValues = new ArrayList<>();
 
         for (String messageId : messageIds) {
-            Message fullMessage = GmailClient.CLIENT.users().messages().get("me", messageId).setFormat("full").execute();
-            EmailMessage message = new EmailMessage();
-            message.setWatermark(fullMessage.getInternalDate());
-            message.setBody(new String(Base64.decodeBase64(fullMessage.getPayload().getBody().getData().getBytes())));
+            EmailMessage message = emailReader.getEmailMessageById(messageId);
 
             if(watermark != null && message.getWatermark() > watermark){
                 logger.info("Processing message: " + messageId);
@@ -76,31 +58,17 @@ public class EmailReporter {
         return newValues;
     }
 
-    public String calculateQuery(Long watermark) {
-        final String query = this.configMapper.getConfig().getQuery();
-
-        if (watermark != null) {
-            return query.replaceAll(
-                    QUERY_EXPRESSION,
-                    " AND after:" + DateUtils.dateToString(new Date(watermark), "yyyy/MM/dd")
-            );
-        }
-
-        return query.replaceAll(QUERY_EXPRESSION, "");
-    }
-
     public void run() throws IOException {
         Long watermark = this.getWatermark();
-        String query = this.calculateQuery(watermark);
-        List<String> messageIds = this.getPendingMessageIds(query);
+        String query = emailReader.calculateQuery(this.configMapper.getConfig().getQuery(), watermark);
+        List<String> messageIds = emailReader.getPendingMessageIds(query);
 
         if (messageIds.isEmpty()) {
             logger.info("No messages found.");
             return;
         }
 
-        // List of lists represents Rows and columns
-        reportDataSource.save(this.calculateNewValues(messageIds, watermark));
+        write(this.calculateNewValues(messageIds, watermark));
     }
 
     private List<Object> calculateRowValues(Long internalDate, String body) {
