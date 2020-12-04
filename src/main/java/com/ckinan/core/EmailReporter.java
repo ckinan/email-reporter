@@ -29,7 +29,20 @@ public class EmailReporter {
         this.emailReader = emailReader;
     }
 
-    public Long getWatermark() throws IOException {
+    public void run() throws IOException {
+        Long watermark = this.getWatermark();
+        String query = emailReader.calculateQuery(this.configMapper.getConfig().getQuery(), watermark);
+        List<String> messageIds = emailReader.getPendingMessageIds(query);
+
+        if (messageIds.isEmpty()) {
+            logger.info("No messages found.");
+            return;
+        }
+
+        write(this.calculateNewValues(messageIds, watermark));
+    }
+
+    private Long getWatermark() throws IOException {
         Long watermark = null;
         List<Object> lastRow = reportDataSource.findLast();
 
@@ -40,7 +53,7 @@ public class EmailReporter {
         return watermark;
     }
 
-    public List<List<Object>> calculateNewValues(List<String> messageIds, Long watermark) throws IOException {
+    private List<List<Object>> calculateNewValues(List<String> messageIds, Long watermark) throws IOException {
         List<List<Object>> newValues = new ArrayList<>();
 
         for (String messageId : messageIds) {
@@ -56,19 +69,6 @@ public class EmailReporter {
 
         Collections.sort(newValues, Comparator.comparingLong(value -> (long) value.get(0)));
         return newValues;
-    }
-
-    public void run() throws IOException {
-        Long watermark = this.getWatermark();
-        String query = emailReader.calculateQuery(this.configMapper.getConfig().getQuery(), watermark);
-        List<String> messageIds = emailReader.getPendingMessageIds(query);
-
-        if (messageIds.isEmpty()) {
-            logger.info("No messages found.");
-            return;
-        }
-
-        write(this.calculateNewValues(messageIds, watermark));
     }
 
     private List<Object> calculateRowValues(Long internalDate, String body) {
@@ -107,7 +107,7 @@ public class EmailReporter {
     private void write(List<List<Object>> rows) throws IOException {
         if(rows != null && rows.size() > 0) {
             reportDataSource.save(rows);
-            logger.info("Rows were appended successfully.");
+            logger.info(rows.size() + " rows were appended successfully.");
         } else {
             logger.info("No rows to append.");
         }
