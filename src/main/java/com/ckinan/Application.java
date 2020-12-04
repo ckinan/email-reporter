@@ -20,12 +20,11 @@ public class Application {
 
 	@Scheduled(cron="${cron.expression}", zone="${cron.zone}")
 	public void runUberGmail() throws IOException {
-		EmailReporter emailProvider = new EmailReporter(
+		new EmailReporter(
 				"/uber-gmail-config.json",
 				new GoogleSheetsDataSource(),
 				new GmailReader()
-		);
-		emailProvider.run();
+		).run();
 	}
 
 }
