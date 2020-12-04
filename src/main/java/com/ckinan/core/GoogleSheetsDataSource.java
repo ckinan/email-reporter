@@ -1,20 +1,21 @@
-package com.ckinan.google;
+package com.ckinan.core;
 
+import com.ckinan.google.SheetsClient;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import io.github.cdimascio.dotenv.Dotenv;
 
 import java.io.IOException;
 import java.util.List;
 
-// TODO : Can I get rid of this class? Or would it be best to move all direct operations against com.ckinan.google to here?
-public class GoogleOperations {
+public class GoogleSheetsDataSource implements IReportDataSource {
 
     private static final Dotenv dotenv = Dotenv.load();
     private static final String spreadsheetId = dotenv.get("GOOGLE_SHEET_ID");
     private static final String sheetAllRange = "Main!A1:J";
     private static final String sheetInternalDateRange = "Main!A1:A";
 
-    public static List<Object> getLastRow() throws IOException {
+    @Override
+    public List<Object> findLast() throws IOException {
         ValueRange internalDates = SheetsClient.CLIENT.spreadsheets().values().get(spreadsheetId, sheetInternalDateRange).execute();
         if(internalDates.getValues() != null) {
             return internalDates.getValues().get(internalDates.getValues().size() - 1);
@@ -22,11 +23,11 @@ public class GoogleOperations {
         return null;
     }
 
-    public static void appendRowsToSheets(List<List<Object>> newValues) throws IOException {
+    @Override
+    public void save(List<List<Object>> newValues) throws IOException {
         ValueRange valueRange = new ValueRange().setValues(newValues);
         SheetsClient.CLIENT.spreadsheets().values().append(spreadsheetId, sheetAllRange, valueRange)
                 .setValueInputOption("USER_ENTERED")
                 .execute();
     }
-
 }

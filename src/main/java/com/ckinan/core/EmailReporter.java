@@ -4,35 +4,37 @@ import com.google.api.client.util.Base64;
 import com.google.api.services.gmail.model.Message;
 import com.ckinan.config.ConfigMapper;
 import com.ckinan.google.GmailClient;
-import com.ckinan.google.GoogleOperations;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import com.ckinan.pojo.Field;
 import com.ckinan.pojo.EmailMessage;
 import com.ckinan.utils.DateUtils;
+import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import us.codecraft.xsoup.Xsoup;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class GmailProvider extends AbstractEmailProvider implements IEmailProvider {
+public class EmailReporter {
 
-    Logger logger = LoggerFactory.getLogger(GmailProvider.class);
+    Logger logger = LoggerFactory.getLogger(EmailReporter.class);
 
     private final static String QUERY_EXPRESSION = "<DATE_QUERY>";
     private ConfigMapper configMapper;
+    private IReportDataSource reportDataSource;
 
-    public GmailProvider(String configFile) throws IOException {
+    public EmailReporter(String configFile, IReportDataSource reportDataSource) throws IOException {
         this.configMapper = new ConfigMapper(configFile);
+        this.reportDataSource = reportDataSource;
     }
 
-    @Override
     public Long getWatermark() throws IOException {
         Long watermark = null;
-        List<Object> lastRow = GoogleOperations.getLastRow();
+        List<Object> lastRow = reportDataSource.findLast();
 
         if(lastRow != null) {
             watermark = Long.parseLong(lastRow.get(0).toString());
@@ -41,7 +43,6 @@ public class GmailProvider extends AbstractEmailProvider implements IEmailProvid
         return watermark;
     }
 
-    @Override
     public List<String> getPendingMessageIds(String query) throws IOException {
         List<String> messageIds = new ArrayList<>();
         // Search operators in Gmail: https://support.google.com/mail/answer/7190?hl=en
@@ -54,7 +55,6 @@ public class GmailProvider extends AbstractEmailProvider implements IEmailProvid
         return messageIds;
     }
 
-    @Override
     public List<List<Object>> calculateNewValues(List<String> messageIds, Long watermark) throws IOException {
         List<List<Object>> newValues = new ArrayList<>();
 
@@ -76,7 +76,6 @@ public class GmailProvider extends AbstractEmailProvider implements IEmailProvid
         return newValues;
     }
 
-    @Override
     public String calculateQuery(Long watermark) {
         final String query = this.configMapper.getConfig().getQuery();
 
@@ -90,19 +89,18 @@ public class GmailProvider extends AbstractEmailProvider implements IEmailProvid
         return query.replaceAll(QUERY_EXPRESSION, "");
     }
 
-    @Override
-    public List<List<Object>> generateReport() throws IOException {
+    public void run() throws IOException {
         Long watermark = this.getWatermark();
         String query = this.calculateQuery(watermark);
         List<String> messageIds = this.getPendingMessageIds(query);
 
         if (messageIds.isEmpty()) {
             logger.info("No messages found.");
-            return null;
+            return;
         }
 
         // List of lists represents Rows and columns
-        return this.calculateNewValues(messageIds, watermark);
+        reportDataSource.save(this.calculateNewValues(messageIds, watermark));
     }
 
     private List<Object> calculateRowValues(Long internalDate, String body) {
@@ -124,6 +122,27 @@ public class GmailProvider extends AbstractEmailProvider implements IEmailProvid
         }
 
         return cellValues;
+    }
+
+    private String readDocument(Document doc, String xpath) {
+        List<Element> elements = Xsoup.compile(xpath).evaluate(doc).getElements();
+        for(Element e: elements) {
+            if("img".equals(e.tagName()) && xpath.endsWith("@src")) {
+                return e.attributes().get("src");
+            } else {
+                return e.text();
+            }
+        }
+        return null;
+    }
+
+    private void write(List<List<Object>> rows) throws IOException {
+        if(rows != null && rows.size() > 0) {
+            reportDataSource.save(rows);
+            logger.info("Rows were appended successfully.");
+        } else {
+            logger.info("No rows to append.");
+        }
     }
 
 }

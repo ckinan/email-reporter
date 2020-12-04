@@ -1,9 +1,7 @@
 package com.ckinan;
 
-import com.ckinan.core.GmailProvider;
-import com.ckinan.core.GoogleSheetsReportWriter;
-import com.ckinan.core.IEmailProvider;
-import com.ckinan.core.IReportWriter;
+import com.ckinan.core.EmailReporter;
+import com.ckinan.core.GoogleSheetsDataSource;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -21,11 +19,9 @@ public class Application {
 	}
 
 	@Scheduled(cron="${cron.expression}", zone="${cron.zone}")
-	public void run() throws IOException {
-		IEmailProvider emailProvider = new GmailProvider("/uber-gmail-config.json");
-		List<List<Object>> rows = emailProvider.generateReport();
-		IReportWriter reportWriter = new GoogleSheetsReportWriter();
-		reportWriter.write(rows);
+	public void runUberGmail() throws IOException {
+		EmailReporter emailProvider = new EmailReporter("/uber-gmail-config.json", new GoogleSheetsDataSource());
+		emailProvider.run();
 	}
 
 }

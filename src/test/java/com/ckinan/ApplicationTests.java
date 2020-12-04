@@ -1,16 +1,19 @@
 package com.ckinan;
 
+import com.ckinan.core.EmailReporter;
+import com.ckinan.core.GoogleSheetsDataSource;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
+import java.util.List;
 
-@SpringBootTest
+// @SpringBootTest
 class ApplicationTests {
 
 	@Test
-	void contextLoads() throws IOException {
-
+	void runUberGmailTest() throws IOException {
+		EmailReporter emailProvider = new EmailReporter("/uber-gmail-config.json", new GoogleSheetsDataSource());
+		emailProvider.run();
 	}
 
 }
