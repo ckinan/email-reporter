@@ -23,9 +23,13 @@ import java.util.List;
 
 public class AbstractGoogleClient {
 
-    public static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    public static final String APPLICATION_NAME = "Email Reporter";
-    public static NetHttpTransport HTTP_TRANSPORT;
+    protected static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+    protected static final String APPLICATION_NAME = "Email Reporter";
+    protected NetHttpTransport HTTP_TRANSPORT;
+
+    public AbstractGoogleClient() throws GeneralSecurityException, IOException {
+        HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+    }
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -40,16 +44,6 @@ public class AbstractGoogleClient {
     );
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
-
-    static {
-        try {
-            HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        } catch (GeneralSecurityException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * Creates an authorized Credential object.

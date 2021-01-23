@@ -6,10 +6,11 @@ import com.ckinan.core.GmailReader;
 import com.ckinan.core.GoogleSheetsDataSource;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 public class Application {
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, GeneralSecurityException {
 		new EmailReporter(
 				new ConfigMapper("/uber-gmail-config.json"),
 				new GoogleSheetsDataSource(),
