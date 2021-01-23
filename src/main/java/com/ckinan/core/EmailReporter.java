@@ -5,8 +5,6 @@ import org.jsoup.nodes.Document;
 import com.ckinan.pojo.Field;
 import com.ckinan.pojo.EmailMessage;
 import org.jsoup.nodes.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import us.codecraft.xsoup.Xsoup;
 
 import java.io.IOException;
@@ -15,8 +13,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class EmailReporter {
-
-    Logger logger = LoggerFactory.getLogger(EmailReporter.class);
 
     private ConfigMapper configMapper;
     private IReportDataSource reportDataSource;
@@ -34,7 +30,7 @@ public class EmailReporter {
         List<String> messageIds = emailReader.getPendingMessageIds(query);
 
         if (messageIds.isEmpty()) {
-            logger.info("No messages found.");
+            System.out.println("No messages found.");
             return;
         }
 
@@ -59,10 +55,10 @@ public class EmailReporter {
             EmailMessage message = emailReader.getEmailMessageById(messageId);
 
             if(watermark != null && message.getWatermark() > watermark){
-                logger.info("Processing message: " + messageId);
+                System.out.println("Processing message: " + messageId);
                 newValues.add(this.calculateRowValues(message.getWatermark(), message.getBody()));
             } else {
-                logger.info("Skipping message: " + messageId);
+                System.out.println("Skipping message: " + messageId);
             }
         }
 
@@ -106,9 +102,9 @@ public class EmailReporter {
     private void write(List<List<Object>> rows) throws IOException {
         if(rows != null && rows.size() > 0) {
             reportDataSource.save(rows);
-            logger.info(rows.size() + " rows were appended successfully.");
+            System.out.println(rows.size() + " rows were appended successfully.");
         } else {
-            logger.info("No rows to append.");
+            System.out.println("No rows to append.");
         }
     }
 
