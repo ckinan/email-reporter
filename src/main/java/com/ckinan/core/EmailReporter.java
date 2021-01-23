@@ -15,10 +15,10 @@ import java.util.regex.Pattern;
 public class EmailReporter {
 
     private ConfigMapper configMapper;
-    private IReportDataSource reportDataSource;
+    private IDataSource reportDataSource;
     private IEmailReader emailReader;
 
-    public EmailReporter(ConfigMapper configMapper, IReportDataSource reportDataSource, IEmailReader emailReader) {
+    public EmailReporter(ConfigMapper configMapper, IDataSource reportDataSource, IEmailReader emailReader) {
         this.configMapper = configMapper;
         this.reportDataSource = reportDataSource;
         this.emailReader = emailReader;

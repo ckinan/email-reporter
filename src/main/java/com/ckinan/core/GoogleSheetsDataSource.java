@@ -7,7 +7,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import java.io.IOException;
 import java.util.List;
 
-public class GoogleSheetsDataSource implements IReportDataSource {
+public class GoogleSheetsDataSource implements IDataSource {
 
     private static final Dotenv dotenv = Dotenv.load();
     private static final String spreadsheetId = dotenv.get("GOOGLE_SHEET_ID");
