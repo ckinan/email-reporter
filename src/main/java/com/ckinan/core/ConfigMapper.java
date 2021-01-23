@@ -1,4 +1,4 @@
-package com.ckinan.config;
+package com.ckinan.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ckinan.pojo.Config;

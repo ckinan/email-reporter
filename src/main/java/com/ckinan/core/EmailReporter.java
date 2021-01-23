@@ -1,6 +1,5 @@
 package com.ckinan.core;
 
-import com.ckinan.config.ConfigMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import com.ckinan.pojo.Field;
