@@ -5,6 +5,7 @@ import org.jsoup.nodes.Document;
 import com.ckinan.emailreporter.core.pojo.Field;
 import com.ckinan.emailreporter.core.pojo.EmailMessage;
 import org.jsoup.nodes.Element;
+import org.tinylog.Logger;
 import us.codecraft.xsoup.Xsoup;
 
 import java.io.IOException;
@@ -30,7 +31,7 @@ public class EmailReporter {
         List<String> messageIds = emailReader.getPendingMessageIds(query);
 
         if (messageIds.isEmpty()) {
-            System.out.println("No messages found.");
+            Logger.info("No messages found.");
             return;
         }
 
@@ -55,10 +56,10 @@ public class EmailReporter {
             EmailMessage message = emailReader.getEmailMessageById(messageId);
 
             if(watermark != null && message.getWatermark() > watermark){
-                System.out.println("Processing message: " + messageId);
+                Logger.info("Processing message: " + messageId);
                 newValues.add(this.calculateRowValues(message.getWatermark(), message.getBody()));
             } else {
-                System.out.println("Skipping message: " + messageId);
+                Logger.info("Skipping message: " + messageId);
             }
         }
 
@@ -102,9 +103,9 @@ public class EmailReporter {
     private void write(List<List<Object>> rows) throws IOException {
         if(rows != null && rows.size() > 0) {
             reportDataSource.save(rows);
-            System.out.println(rows.size() + " rows were appended successfully.");
+            Logger.info(rows.size() + " rows were appended successfully.");
         } else {
-            System.out.println("No rows to append.");
+            Logger.info("No rows to append.");
         }
     }
 
