@@ -21,7 +21,7 @@ public class Application {
 				.withIdentity("mainTrigger", "mainTriggerGroup")
 				.withSchedule(
 						// Ref: http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html
-						CronScheduleBuilder.cronSchedule("0 0,15,30,45,59 8-23 ? * *")
+						CronScheduleBuilder.cronSchedule("0 0,15,30,45 8-23 ? * *")
 				)
 				.build();
 
