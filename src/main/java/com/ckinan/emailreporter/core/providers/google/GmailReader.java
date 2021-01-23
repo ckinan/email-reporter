@@ -1,8 +1,9 @@
-package com.ckinan.core;
+package com.ckinan.emailreporter.core.providers.google;
 
-import com.ckinan.google.GmailClient;
-import com.ckinan.pojo.EmailMessage;
-import com.ckinan.utils.DateUtils;
+import com.ckinan.emailreporter.core.IEmailReader;
+import com.ckinan.emailreporter.core.providers.google.clients.GmailClient;
+import com.ckinan.emailreporter.core.pojo.EmailMessage;
+import com.ckinan.emailreporter.core.utils.DateUtils;
 import com.google.api.client.util.Base64;
 import com.google.api.services.gmail.model.Message;
 

@@ -1,4 +1,4 @@
-package com.ckinan.core;
+package com.ckinan.emailreporter.core;
 
 import java.io.IOException;
 import java.util.List;

@@ -1,6 +1,6 @@
-package com.ckinan.core;
+package com.ckinan.emailreporter.core;
 
-import com.ckinan.pojo.EmailMessage;
+import com.ckinan.emailreporter.core.pojo.EmailMessage;
 
 import java.io.IOException;
 import java.util.List;

@@ -1,7 +1,7 @@
-package com.ckinan.core;
+package com.ckinan.emailreporter.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ckinan.pojo.Config;
+import com.ckinan.emailreporter.core.pojo.Config;
 
 import java.io.IOException;
 import java.io.InputStream;

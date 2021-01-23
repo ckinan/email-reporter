@@ -1,4 +1,4 @@
-package com.ckinan.pojo;
+package com.ckinan.emailreporter.core.pojo;
 
 public class EmailMessage {
 

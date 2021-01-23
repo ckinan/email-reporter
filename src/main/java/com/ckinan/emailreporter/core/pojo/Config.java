@@ -1,4 +1,4 @@
-package com.ckinan.pojo;
+package com.ckinan.emailreporter.core.pojo;
 
 import java.util.List;
 

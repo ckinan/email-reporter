@@ -1,9 +1,9 @@
-package com.ckinan;
+package com.ckinan.emailreporter;
 
-import com.ckinan.core.ConfigMapper;
-import com.ckinan.core.EmailReporter;
-import com.ckinan.core.GmailReader;
-import com.ckinan.core.GoogleSheetsDataSource;
+import com.ckinan.emailreporter.core.ConfigMapper;
+import com.ckinan.emailreporter.core.EmailReporter;
+import com.ckinan.emailreporter.core.providers.google.GmailReader;
+import com.ckinan.emailreporter.core.providers.google.GoogleSheetsDataSource;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;

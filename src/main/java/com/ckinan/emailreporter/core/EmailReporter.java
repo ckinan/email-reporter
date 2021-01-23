@@ -1,9 +1,9 @@
-package com.ckinan.core;
+package com.ckinan.emailreporter.core;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import com.ckinan.pojo.Field;
-import com.ckinan.pojo.EmailMessage;
+import com.ckinan.emailreporter.core.pojo.Field;
+import com.ckinan.emailreporter.core.pojo.EmailMessage;
 import org.jsoup.nodes.Element;
 import us.codecraft.xsoup.Xsoup;
 

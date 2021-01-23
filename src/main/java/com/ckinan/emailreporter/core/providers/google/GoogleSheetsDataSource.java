@@ -1,6 +1,7 @@
-package com.ckinan.core;
+package com.ckinan.emailreporter.core.providers.google;
 
-import com.ckinan.google.SheetsClient;
+import com.ckinan.emailreporter.core.IDataSource;
+import com.ckinan.emailreporter.core.providers.google.clients.SheetsClient;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import io.github.cdimascio.dotenv.Dotenv;
 

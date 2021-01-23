@@ -1,4 +1,4 @@
-package com.ckinan.google;
+package com.ckinan.emailreporter.core.providers.google.clients;
 
 import com.google.api.services.sheets.v4.Sheets;
 

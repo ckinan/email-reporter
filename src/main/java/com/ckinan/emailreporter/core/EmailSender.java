@@ -1,4 +1,4 @@
-package com.ckinan;
+package com.ckinan.emailreporter.core;
 
 import com.sendgrid.*;
 import io.github.cdimascio.dotenv.Dotenv;

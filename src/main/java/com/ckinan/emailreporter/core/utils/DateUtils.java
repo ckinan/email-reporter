@@ -1,4 +1,4 @@
-package com.ckinan.utils;
+package com.ckinan.emailreporter.core.utils;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
