@@ -17,3 +17,10 @@ from the last email message processed based on what the datasource has (there is
 ## Third parties
 
 - Setup logging: [Tinylog](https://tinylog.org/v2/)
+
+## Run
+
+```
+mvn clean install
+java -jar target/email-reporter.jar
+```
