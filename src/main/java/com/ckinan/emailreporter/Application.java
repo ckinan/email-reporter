@@ -1,21 +1,34 @@
 package com.ckinan.emailreporter;
 
-import com.ckinan.emailreporter.core.ConfigMapper;
-import com.ckinan.emailreporter.core.EmailReporter;
-import com.ckinan.emailreporter.core.providers.google.GmailReader;
-import com.ckinan.emailreporter.core.providers.google.GoogleSheetsDataSource;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
+import org.quartz.*;
+import org.quartz.impl.StdSchedulerFactory;
+import org.tinylog.Logger;
 
 public class Application {
 
-	public static void main(String[] args) throws IOException, GeneralSecurityException {
-		new EmailReporter(
-				new ConfigMapper("/uber-gmail-config.json"),
-				new GoogleSheetsDataSource(),
-				new GmailReader()
-		).run();
+	public static void main(String[] args) throws SchedulerException {
+
+		Logger.info("Starting application...");
+
+		Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+		scheduler.start();
+
+		JobDetail job = JobBuilder.newJob(EmailReporterJob.class)
+				.withIdentity("mainJob", "mainJobGroup")
+				.build();
+
+		Trigger trigger = TriggerBuilder.newTrigger()
+				.withIdentity("mainTrigger", "mainTriggerGroup")
+				.withSchedule(
+						// Ref: http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html
+						CronScheduleBuilder.cronSchedule("0 0,15,30,45,59 8-23 ? * *")
+				)
+				.build();
+
+		StdSchedulerFactory.getDefaultScheduler().scheduleJob(job, trigger);
+
+		Logger.info("Application started successfully!");
+
 	}
 
 }

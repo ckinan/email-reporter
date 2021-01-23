@@ -1,5 +1,6 @@
 package com.ckinan.emailreporter.core;
 
+import com.ckinan.emailreporter.core.providers.sendgrid.EmailSender;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import com.ckinan.emailreporter.core.pojo.Field;
@@ -31,11 +32,19 @@ public class EmailReporter {
         List<String> messageIds = emailReader.getPendingMessageIds(query);
 
         if (messageIds.isEmpty()) {
-            Logger.info("No messages found.");
+            Logger.debug("No messages found.");
             return;
         }
 
-        write(this.calculateNewValues(messageIds, watermark));
+        List<List<Object>> newValues = this.calculateNewValues(messageIds, watermark);
+        write(newValues);
+
+        if(!newValues.isEmpty()) {
+            EmailSender.send(
+                    "Update from email-reporter",
+                    String.format("Processed %s new entries", newValues.size())
+            );
+        }
     }
 
     private Long getWatermark() throws IOException {
@@ -59,7 +68,7 @@ public class EmailReporter {
                 Logger.info("Processing message: " + messageId);
                 newValues.add(this.calculateRowValues(message.getWatermark(), message.getBody()));
             } else {
-                Logger.info("Skipping message: " + messageId);
+                Logger.debug("Skipping message: " + messageId);
             }
         }
 
