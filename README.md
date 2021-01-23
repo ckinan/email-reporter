@@ -12,5 +12,8 @@ from the last email message processed based on what the datasource has (there is
 
 ## TODOs
 
-- Setup logging
 - Setup crontab
+
+## Third parties
+
+- Setup logging: [Tinylog](https://tinylog.org/v2/)
