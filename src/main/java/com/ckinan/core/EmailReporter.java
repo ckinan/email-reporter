@@ -23,8 +23,8 @@ public class EmailReporter {
     private IReportDataSource reportDataSource;
     private IEmailReader emailReader;
 
-    public EmailReporter(String configFile, IReportDataSource reportDataSource, IEmailReader emailReader) throws IOException {
-        this.configMapper = new ConfigMapper(configFile);
+    public EmailReporter(ConfigMapper configMapper, IReportDataSource reportDataSource, IEmailReader emailReader) throws IOException {
+        this.configMapper = configMapper;
         this.reportDataSource = reportDataSource;
         this.emailReader = emailReader;
     }

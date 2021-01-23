@@ -18,13 +18,13 @@ public class Application {
 		SpringApplication.run(Application.class, args);
 	}
 
-	@Scheduled(cron="${cron.expression}", zone="${cron.zone}")
+	/*@Scheduled(cron="${cron.expression}", zone="${cron.zone}")
 	public void runUberGmail() throws IOException {
 		new EmailReporter(
 				"/uber-gmail-config.json",
 				new GoogleSheetsDataSource(),
 				new GmailReader()
 		).run();
-	}
+	}*/
 
 }
