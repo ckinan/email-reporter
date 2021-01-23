@@ -1,4 +1,4 @@
-package com.ckinan.emailreporter;
+package com.ckinan.emailreporter.jobs;
 
 import com.ckinan.emailreporter.core.ConfigMapper;
 import com.ckinan.emailreporter.core.EmailReporter;
@@ -12,7 +12,7 @@ import org.tinylog.Logger;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
-public class EmailReporterJob implements Job {
+public class UberReportJob implements Job {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
