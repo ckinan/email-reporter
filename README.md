@@ -12,11 +12,14 @@ from the last email message processed based on what the datasource has (there is
 
 ## TODOs
 
-- Setup crontab
+- Create .env
+- Create credentials.json
+- OAuth2 flow
 
 ## Third parties
 
 - Setup logging: [Tinylog](https://tinylog.org/v2/)
+- Setup crontab: Quartz
 
 ## Run
 
@@ -24,3 +27,4 @@ from the last email message processed based on what the datasource has (there is
 mvn clean install
 java -jar target/email-reporter.jar
 ```
+
