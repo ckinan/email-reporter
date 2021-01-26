@@ -25,6 +25,6 @@ from the last email message processed based on what the datasource has (there is
 
 ```
 mvn clean install
-java -jar target/email-reporter.jar
+java -Duser.timezone=America/Lima -jar target/email-reporter.jar &
 ```
 
